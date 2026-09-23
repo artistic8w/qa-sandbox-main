@@ -1,0 +1,102 @@
+<div class="time-header">
+  <h1>{{ 'time.title' | translate }}</h1>
+  <div class="week-nav">
+    <button mat-icon-button (click)="prevWeek()" [attr.aria-label]="'time.prev' | translate">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+    <span class="week-label">{{ 'time.week' | translate }} {{ weekNumber() }}</span>
+    <button mat-icon-button (click)="nextWeek()" [attr.aria-label]="'time.next' | translate">
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+    <button mat-stroked-button (click)="today()">{{ 'time.today' | translate }}</button>
+  </div>
+</div>
+
+<mat-card class="add-card">
+  <mat-card-content>
+    <form [formGroup]="form" (ngSubmit)="add()" class="add-form">
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'time.date' | translate }}</mat-label>
+        <input matInput type="date" formControlName="date" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="client-field">
+        <mat-label>{{ 'time.client' | translate }}</mat-label>
+        <mat-select formControlName="clientId">
+          @for (c of clients(); track c.id) {
+            <mat-option [value]="c.id">{{ c.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="time-field">
+        <mat-label>{{ 'time.start' | translate }}</mat-label>
+        <input matInput type="time" formControlName="startTime" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="time-field">
+        <mat-label>{{ 'time.end' | translate }}</mat-label>
+        <input matInput type="time" formControlName="endTime" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="grow">
+        <mat-label>{{ 'time.comment' | translate }}</mat-label>
+        <input matInput formControlName="comment" />
+      </mat-form-field>
+
+      <mat-checkbox formControlName="isBillable">{{ 'time.billable' | translate }}</mat-checkbox>
+
+      <button mat-flat-button color="primary" type="submit">{{ 'time.add' | translate }}</button>
+    </form>
+    @if (selectedHoliday()) {
+      <p class="holiday-warning">
+        <mat-icon>warning</mat-icon>
+        {{ 'time.holidayWarning' | translate }} — {{ selectedHoliday() }}
+      </p>
+    }
+  </mat-card-content>
+</mat-card>
+
+@if (loading()) {
+  <div class="time-loading"><mat-spinner diameter="40" /></div>
+} @else {
+  <div class="day-list">
+    @for (day of days(); track day.iso) {
+      <mat-card class="day-card" [class.is-holiday]="day.holiday">
+        <mat-card-content>
+          <div class="day-head">
+            <span class="day-name">{{ day.date | date: 'EEEE d. MMM' : '' : locale() }}</span>
+            @if (day.holiday) {
+              <span class="holiday-badge">
+                <mat-icon>flag</mat-icon> {{ day.holiday }}
+              </span>
+            }
+          </div>
+
+          @if (day.entries.length === 0) {
+            <p class="day-empty">{{ 'time.noEntries' | translate }}</p>
+          } @else {
+            <ul class="entry-list">
+              @for (e of day.entries; track e.id) {
+                <li class="entry-row">
+                  <span class="entry-time">{{ e.startTime }}–{{ e.endTime }}</span>
+                  <span class="entry-client">{{ clientName(e.clientId) }}</span>
+                  <span class="entry-comment">{{ e.comment }}</span>
+                  <span class="entry-duration">{{ durationLabel(e) }}</span>
+                  @if (e.isBillable) {
+                    <mat-icon class="entry-billable" [attr.aria-label]="'time.billable' | translate">paid</mat-icon>
+                  }
+                  @if (isAdmin()) {
+                    <button mat-icon-button (click)="remove(e)">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </mat-card-content>
+      </mat-card>
+    }
+  </div>
+}

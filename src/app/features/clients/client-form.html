@@ -1,0 +1,111 @@
+<mat-card class="form-card">
+  <mat-card-header>
+    <mat-card-title>
+      {{ (editId() ? 'clientForm.editTitle' : 'clientForm.newTitle') | translate }}
+    </mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="org-row">
+        <mat-form-field appearance="outline" class="grow">
+          <mat-label>{{ 'clientForm.orgNumber' | translate }}</mat-label>
+          <input matInput formControlName="organizationNumber" />
+          @if (form.controls.organizationNumber.touched && form.controls.organizationNumber.hasError('orgNumber')) {
+            <mat-error>{{ 'clientForm.orgInvalid' | translate }}</mat-error>
+          }
+        </mat-form-field>
+        <button mat-stroked-button type="button" (click)="lookup()">
+          @if (lookingUp()) {
+            <mat-spinner diameter="18" />
+          } @else {
+            <mat-icon>cloud_download</mat-icon>
+          }
+          {{ 'clientForm.lookup' | translate }}
+        </button>
+      </div>
+      @if (lookupMessage()) {
+        <p class="lookup-msg">{{ lookupMessage()! | translate }}</p>
+      }
+
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>{{ 'clientForm.name' | translate }}</mat-label>
+        <input matInput formControlName="name" />
+        @if (form.controls.name.touched && form.controls.name.hasError('required')) {
+          <mat-error>{{ 'clientForm.nameRequired' | translate }}</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="two-col">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'clientForm.category' | translate }}</mat-label>
+          <mat-select formControlName="customerCategory">
+            <mat-option value="company">{{ 'clientForm.company' | translate }}</mat-option>
+            <mat-option value="person">{{ 'clientForm.person' | translate }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'clientForm.status' | translate }}</mat-label>
+          <mat-select formControlName="status">
+            @for (s of statuses; track s) {
+              <mat-option [value]="s">{{ 'status.' + s | translate }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>{{ 'clientForm.addressLine' | translate }}</mat-label>
+        <input matInput formControlName="line1" />
+      </mat-form-field>
+
+      <div class="three-col">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'clientForm.postnummer' | translate }}</mat-label>
+          <input matInput formControlName="postnummer" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'clientForm.poststed' | translate }}</mat-label>
+          <input matInput formControlName="poststed" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'clientForm.land' | translate }}</mat-label>
+          <input matInput formControlName="land" />
+        </mat-form-field>
+      </div>
+
+      <div class="two-col">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'clientForm.email' | translate }}</mat-label>
+          <input matInput type="email" formControlName="email" />
+          @if (form.controls.email.touched && form.controls.email.hasError('email')) {
+            <mat-error>{{ 'clientForm.emailInvalid' | translate }}</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'clientForm.telephone' | translate }}</mat-label>
+          <input matInput formControlName="telephone" />
+        </mat-form-field>
+      </div>
+
+      <div class="two-col">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'clientForm.rate' | translate }}</mat-label>
+          <input matInput type="number" formControlName="hourlyRateNok" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'clientForm.tags' | translate }}</mat-label>
+          <input matInput formControlName="tags" />
+        </mat-form-field>
+      </div>
+
+      <div class="form-actions">
+        <button mat-button type="button" (click)="cancel()">{{ 'clientForm.cancel' | translate }}</button>
+        <button mat-flat-button color="primary" type="submit">
+          {{ 'clientForm.save' | translate }}
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

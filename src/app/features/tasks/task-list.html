@@ -1,0 +1,76 @@
+<div class="tasks-header">
+  <h1>{{ 'tasks.title' | translate }}</h1>
+</div>
+
+<div class="tasks-filters">
+  <mat-form-field appearance="outline" class="status-field">
+    <mat-label>{{ 'tasks.status' | translate }}</mat-label>
+    <mat-select [value]="statusFilter()" (selectionChange)="onStatus($event.value)">
+      <mat-option value="all">{{ 'tasks.allStatuses' | translate }}</mat-option>
+      @for (s of statuses; track s) {
+        <mat-option [value]="s">{{ 'taskStatus.' + s | translate }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+</div>
+
+@if (loading()) {
+  <div class="tasks-loading"><mat-spinner diameter="40" /></div>
+} @else {
+  <table mat-table [dataSource]="filtered()" class="tasks-table">
+    <ng-container matColumnDef="title">
+      <th mat-header-cell *matHeaderCellDef>{{ 'tasks.taskTitle' | translate }}</th>
+      <td mat-cell *matCellDef="let t">{{ t.title }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="client">
+      <th mat-header-cell *matHeaderCellDef>{{ 'tasks.client' | translate }}</th>
+      <td mat-cell *matCellDef="let t">
+        <a [routerLink]="['/clients', t.clientId]">{{ clientName(t.clientId) }}</a>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="assignee">
+      <th mat-header-cell *matHeaderCellDef>{{ 'tasks.assignee' | translate }}</th>
+      <td mat-cell *matCellDef="let t">{{ userName(t.assigneeUserId) }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="priority">
+      <th mat-header-cell *matHeaderCellDef>{{ 'tasks.priority' | translate }}</th>
+      <td mat-cell *matCellDef="let t">{{ 'priority.' + t.priority | translate }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="dueDate">
+      <th mat-header-cell *matHeaderCellDef>{{ 'tasks.dueDate' | translate }}</th>
+      <td mat-cell *matCellDef="let t" [class.overdue]="isOverdue(t)">
+        {{ t.dueDate | date: 'd. MMM y' : '' : locale() }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>{{ 'tasks.status' | translate }}</th>
+      <td mat-cell *matCellDef="let t">{{ 'taskStatus.' + t.status | translate }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let t" class="tasks-actions">
+        @if (t.status !== 'done') {
+          <button mat-icon-button (click)="complete(t)" [attr.aria-label]="'tasks.complete' | translate">
+            <mat-icon>check_circle</mat-icon>
+          </button>
+        }
+        <button mat-icon-button (click)="remove(t)" [attr.aria-label]="'tasks.delete' | translate">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  </table>
+
+  @if (filtered().length === 0) {
+    <p class="tasks-empty">{{ 'tasks.empty' | translate }}</p>
+  }
+}

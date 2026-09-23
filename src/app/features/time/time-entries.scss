@@ -1,0 +1,123 @@
+.time-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.week-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.week-label {
+  font-weight: 600;
+  min-width: 72px;
+  text-align: center;
+}
+
+.add-card {
+  margin-bottom: 16px;
+}
+
+.add-form {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.add-form .grow {
+  flex: 1 1 200px;
+}
+
+.client-field {
+  min-width: 220px;
+}
+
+.time-field {
+  width: 120px;
+}
+
+.holiday-warning {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #b26a00;
+  margin: 4px 0 0;
+}
+
+.day-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.day-card.is-holiday {
+  border-left: 4px solid #b26a00;
+}
+
+.day-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.day-name {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.holiday-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #b26a00;
+  font-size: 0.9rem;
+}
+
+.day-empty {
+  color: var(--mat-sys-on-surface-variant, #888);
+  margin: 8px 0 0;
+}
+
+.entry-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+.entry-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+  border-top: 1px solid var(--mat-sys-outline-variant, #eee);
+}
+
+.entry-time {
+  font-variant-numeric: tabular-nums;
+  min-width: 96px;
+}
+
+.entry-client {
+  font-weight: 500;
+  min-width: 160px;
+}
+
+.entry-comment {
+  flex: 1 1 auto;
+  color: var(--mat-sys-on-surface-variant, #666);
+}
+
+.entry-billable {
+  color: #2e7d32;
+}
+
+.time-loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}

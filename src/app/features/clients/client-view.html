@@ -1,0 +1,134 @@
+@if (loading()) {
+  <div class="cv-loading"><mat-spinner diameter="40" /></div>
+} @else if (client(); as c) {
+  <div class="cv-header">
+    <a mat-button routerLink="/clients">
+      <mat-icon>arrow_back</mat-icon>
+      {{ 'clients.title' | translate }}
+    </a>
+    @if (isAdmin()) {
+      <button mat-stroked-button (click)="editClient()">
+        <mat-icon>edit</mat-icon>
+        {{ 'clients.edit' | translate }}
+      </button>
+    }
+  </div>
+
+  <mat-card class="cv-summary">
+    <mat-card-header>
+      <mat-card-title>{{ c.name }}</mat-card-title>
+      <mat-card-subtitle>{{ 'status.' + c.status | translate }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <dl class="cv-fields">
+        <dt>{{ 'clientForm.orgNumber' | translate }}</dt>
+        <dd>{{ c.organizationNumber }}</dd>
+        <dt>{{ 'clientForm.addressLine' | translate }}</dt>
+        <dd>{{ c.address.line1 }}, {{ c.address.postnummer }} {{ c.address.poststed }}</dd>
+        <dt>{{ 'clientForm.email' | translate }}</dt>
+        <dd>{{ c.email }}</dd>
+        <dt>{{ 'clientForm.telephone' | translate }}</dt>
+        <dd>{{ c.telephone }}</dd>
+        <dt>{{ 'clientForm.rate' | translate }}</dt>
+        <dd>{{ c.hourlyRateNok }} kr</dd>
+      </dl>
+      @if (c.tags.length) {
+        <mat-chip-set>
+          @for (tag of c.tags; track tag) {
+            <mat-chip>{{ tag }}</mat-chip>
+          }
+        </mat-chip-set>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <div class="cv-tasks-header">
+    <h2>{{ 'tasks.title' | translate }}</h2>
+    <button mat-flat-button color="primary" (click)="startCreate()">
+      <mat-icon>add_task</mat-icon>
+      {{ 'tasks.new' | translate }}
+    </button>
+  </div>
+
+  @if (showForm()) {
+    <mat-card class="cv-task-form">
+      <mat-card-content>
+        <form [formGroup]="form" (ngSubmit)="saveTask()" class="task-form">
+          <mat-form-field appearance="outline" class="grow">
+            <mat-label>{{ 'tasks.taskTitle' | translate }}</mat-label>
+            <input matInput formControlName="title" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'tasks.dueDate' | translate }}</mat-label>
+            <input matInput type="date" formControlName="dueDate" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'tasks.priority' | translate }}</mat-label>
+            <mat-select formControlName="priority">
+              @for (p of priorities; track p) {
+                <mat-option [value]="p">{{ 'priority.' + p | translate }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'tasks.status' | translate }}</mat-label>
+            <mat-select formControlName="status">
+              @for (s of statuses; track s) {
+                <mat-option [value]="s">{{ 'taskStatus.' + s | translate }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'tasks.assignee' | translate }}</mat-label>
+            <mat-select formControlName="assigneeUserId">
+              @for (u of users(); track u.id) {
+                <mat-option [value]="u.id">{{ u.displayName }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <div class="task-form-actions">
+            <button mat-button type="button" (click)="cancelForm()">{{ 'tasks.cancel' | translate }}</button>
+            <button mat-flat-button color="primary" type="submit">{{ 'tasks.save' | translate }}</button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  @if (sortedTasks().length === 0) {
+    <p class="cv-empty">{{ 'tasks.empty' | translate }}</p>
+  } @else {
+    <div class="task-list">
+      @for (task of sortedTasks(); track task.id) {
+        <mat-card class="task-card" [class.is-overdue]="isOverdue(task)" [class.is-done]="task.status === 'done'">
+          <mat-card-content class="task-row">
+            <span class="task-prio" [attr.data-prio]="task.priority">{{ 'priority.' + task.priority | translate }}</span>
+            <span class="task-title">{{ task.title }}</span>
+            <span class="task-status">{{ 'taskStatus.' + task.status | translate }}</span>
+            <span class="task-assignee">{{ assigneeName(task.assigneeUserId) }}</span>
+            <span class="task-due" [class.overdue]="isOverdue(task)">
+              {{ task.dueDate | date: 'd. MMM y' : '' : locale() }}
+            </span>
+            <span class="task-actions">
+              @if (task.status !== 'done') {
+                <button mat-icon-button (click)="complete(task)" [attr.aria-label]="'tasks.complete' | translate">
+                  <mat-icon>check_circle</mat-icon>
+                </button>
+              }
+              <button mat-icon-button (click)="startEdit(task)" [attr.aria-label]="'tasks.edit' | translate">
+                <mat-icon>edit</mat-icon>
+              </button>
+              @if (isAdmin()) {
+                <button mat-icon-button (click)="remove(task)" [attr.aria-label]="'tasks.delete' | translate">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              }
+            </span>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  }
+} @else {
+  <p class="cv-empty">{{ 'clients.empty' | translate }}</p>
+}

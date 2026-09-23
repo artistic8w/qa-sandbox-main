@@ -1,0 +1,53 @@
+<mat-toolbar color="primary" class="shell-toolbar">
+  <span class="shell-title">{{ 'shell.title' | translate }}</span>
+
+  <nav class="shell-nav">
+    <a mat-button routerLink="/dashboard" routerLinkActive="active-link">
+      {{ 'nav.dashboard' | translate }}
+    </a>
+    <a mat-button routerLink="/clients" routerLinkActive="active-link">
+      {{ 'nav.clients' | translate }}
+    </a>
+    <a mat-button routerLink="/tasks" routerLinkActive="active-link">
+      {{ 'nav.tasks' | translate }}
+    </a>
+    <a mat-button routerLink="/time" routerLinkActive="active-link">
+      {{ 'nav.time' | translate }}
+    </a>
+    @if (isAdmin()) {
+      <a mat-button routerLink="/users" routerLinkActive="active-link">
+        {{ 'nav.users' | translate }}
+      </a>
+    }
+  </nav>
+
+  <span class="shell-spacer"></span>
+
+  <button mat-button [matMenuTriggerFor]="langMenu" aria-label="Language">
+    <mat-icon>language</mat-icon>
+  </button>
+  <mat-menu #langMenu="matMenu">
+    <button mat-menu-item (click)="switchLanguage('en')">English</button>
+    <button mat-menu-item (click)="switchLanguage('nb')">Norsk</button>
+  </mat-menu>
+
+  <button mat-button (click)="reset()" [disabled]="resetting()">
+    <mat-icon>restart_alt</mat-icon>
+    {{ 'shell.reset' | translate }}
+  </button>
+
+  <button mat-button [matMenuTriggerFor]="userMenu">
+    <mat-icon>account_circle</mat-icon>
+    {{ displayName() }}
+  </button>
+  <mat-menu #userMenu="matMenu">
+    <button mat-menu-item (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      {{ 'shell.logout' | translate }}
+    </button>
+  </mat-menu>
+</mat-toolbar>
+
+<main class="shell-content">
+  <router-outlet />
+</main>

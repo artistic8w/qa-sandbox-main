@@ -1,0 +1,38 @@
+.users-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.user-form-card {
+  margin-bottom: 16px;
+}
+
+.user-form {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.user-form-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.users-table {
+  width: 100%;
+}
+
+.users-actions {
+  text-align: right;
+  width: 56px;
+}
+
+.users-loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}

@@ -1,0 +1,37 @@
+.dash-loading {
+  display: flex;
+  justify-content: center;
+  padding: 64px 0;
+}
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.dash-card--wide {
+  grid-column: span 2;
+}
+
+.dash-value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.dash-unit {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.dash-sub {
+  font-size: 1rem;
+  color: var(--mat-sys-on-surface-variant, #555);
+  margin-top: 2px;
+}
+
+.dash-label {
+  margin-top: 8px;
+  color: var(--mat-sys-on-surface-variant, #555);
+}

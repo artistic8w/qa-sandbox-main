@@ -1,0 +1,42 @@
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.list-filters {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.search-field {
+  flex: 1 1 320px;
+}
+
+.status-field {
+  flex: 0 0 220px;
+}
+
+.client-table {
+  width: 100%;
+}
+
+.actions-cell {
+  text-align: right;
+  width: 56px;
+}
+
+.list-loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.list-empty {
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant, #666);
+  padding: 24px 0;
+}

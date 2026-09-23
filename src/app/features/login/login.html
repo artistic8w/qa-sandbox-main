@@ -1,0 +1,36 @@
+<div class="login-wrap">
+  <mat-card class="login-card">
+    <mat-card-header>
+      <mat-card-title>{{ 'login.title' | translate }}</mat-card-title>
+      <mat-card-subtitle>{{ 'login.subtitle' | translate }}</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>{{ 'login.email' | translate }}</mat-label>
+          <input matInput type="email" formControlName="email" autocomplete="username" />
+          @if (form.controls.email.touched && form.controls.email.invalid) {
+            <mat-error>{{ 'login.emailError' | translate }}</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>{{ 'login.password' | translate }}</mat-label>
+          <input matInput type="password" formControlName="password" autocomplete="current-password" />
+          @if (form.controls.password.touched && form.controls.password.invalid) {
+            <mat-error>{{ 'login.passwordError' | translate }}</mat-error>
+          }
+        </mat-form-field>
+
+        @if (failed()) {
+          <p class="login-failed">{{ 'login.failed' | translate }}</p>
+        }
+
+        <button mat-flat-button color="primary" type="submit" class="full" [disabled]="submitting()">
+          {{ 'login.submit' | translate }}
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>
