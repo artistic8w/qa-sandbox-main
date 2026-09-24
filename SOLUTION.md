@@ -14,11 +14,11 @@ localized, stateful app rather than a static page. Concretely, that meant:
   `getByRole('heading', { name: 'Dashboard' })` and `getByLabel('Email')`, which
   broke the moment I tested the Admin flow (renders "Oversikt", not
   "Dashboard") — and broke a second time on the *logout* test specifically,
-  because logging out doesn't reset the UI language (see Bug #5), so the login
-  screen itself can render in whatever language the previous session left it
-  in. That's a case where a testid isn't just convenient, it's the only correct
-  choice — the accessible name is genuinely not stable, by design, given the
-  app's own behavior.
+  because logging out doesn't reset the UI language (see `BUGS.md` #6), so the
+  login screen itself can render in whatever language the previous session
+  left it in. That's a case where a testid isn't just convenient, it's the
+  only correct choice — the accessible name is genuinely not stable, by
+  design, given the app's own behavior.
 - **Session/user-dependent text.** The user-menu button's label is the logged-in
   user's display name (`Kari Admin` vs `Ola Regnskap`) — a role/name locator
   would need to branch per role, so a stable testid is simpler and correct
@@ -35,6 +35,15 @@ localized, stateful app rather than a static page. Concretely, that meant:
   per-row "Client actions" button that's identical across every row) — scoped
   by id via testid rather than relying on row position, which would break the
   moment sorting or pagination changes.
+- **Where I deliberately avoided a testid in favour of structure.** The
+  client-list-depth tests locate the Name column's sort button via
+  `table.locator('th').first().getByRole('button')` rather than a testid —
+  the first column is always Name regardless of locale, so this is both
+  simpler than adding another testid and inherently locale-proof. Similarly,
+  the pagination "Next page" button uses a plain role/name locator: the app
+  never overrides Angular Material's `MatPaginatorIntl`, so that label is
+  always English by construction, not by accident — confirmed by checking
+  the codebase rather than assumed.
 
 Everywhere else — forms with genuinely static English labels used only in
 English-locale test contexts, buttons with unique translated text within a
@@ -68,54 +77,79 @@ building this out:
   `e2e/fixtures/network.ts` stubs BRØNNØYSUND, Nager.Date, and Norges Bank with
   safe defaults for every test via a `page` fixture override, so no test ever
   depends on those services actually being reachable. Tests that need specific
-  data (the org-number lookup test) register a more specific `page.route()` on
-  top of that default — Playwright checks the most-recently-registered handler
-  first, so the specific mock wins for its exact URL while everything else
-  still falls back to the safe default.
-- **Prefer waiting for real state over waiting for time.** Where an interaction
-  involves an overlay (Angular Material's `mat-select` panels, in particular),
-  I wait for the actual panel to be visible/hidden rather than adding a fixed
-  `waitForTimeout`. This mattered more than expected — see the note below.
+  data (the org-number lookup tests) register a more specific `page.route()`
+  on top of that default — Playwright checks the most-recently-registered
+  handler first, so the specific mock wins for its exact URL while everything
+  else still falls back to the safe default.
+- **Control timing directly instead of relying on real network jitter, when a
+  test's whole point is timing.** The race-condition test
+  (`e2e/tests/race-condition.spec.ts`, covering `BUGS.md` #3) needed the first
+  lookup to resolve *after* the second, deterministically, every run — not "on
+  a slow network, sometimes." `mockBrregFound()` takes an optional `delayMs`
+  and resolves the mocked response only after that delay, so the race is
+  reproduced by construction rather than by luck. The one intentional
+  exception to "don't use fixed waits": the test's final assertion is a
+  polling `expect(...).toHaveValue(...)` with a timeout comfortably longer
+  than the artificial delay — so even here, it's Playwright's built-in
+  retry/poll waiting for real DOM state, not a blind `waitForTimeout`.
+- **Prefer a weaker-but-robust assertion over a precise-but-brittle one when
+  exact output isn't the point.** The collation test
+  (`e2e/tests/client-list-depth.spec.ts`, covering `BUGS.md` #4) asserts that
+  descending sort does *not* put an Æ/Ø/Å name at the top (proving the bug),
+  rather than asserting the exact resulting row order. I don't know every
+  seeded client name's precise alphabetical position without running the
+  suite, so a tighter assertion risks failing for a reason unrelated to the
+  actual bug being tested. A passing "wrong behavior is present" assertion is
+  still solid proof of the defect; it just doesn't over-claim precision it
+  doesn't need.
+- **Prefer waiting for real overlay state over waiting for time**, generally —
+  where an interaction involves a CDK overlay (`mat-select` panels in
+  particular), wait for the panel to actually be visible/hidden rather than a
+  fixed delay.
 - **Don't build a test around a boundary the app doesn't actually enforce.**
   Two routes (`/clients/:id/edit`, `/users`) are missing their `adminGuard`
-  (Bugs #1–2) — I found this via code reading before writing the required
-  permission-boundary test, and deliberately picked a different boundary (an
+  (`BUGS.md` #1–2) — found via code reading before writing the required
+  permission-boundary test, and I deliberately picked a different boundary (an
   Accountant cannot delete a time entry) that's genuinely, correctly enforced
   with no route to bypass it. Building the required test around a boundary I
   already knew was broken would have meant either a failing "required" test,
   or quietly working around a bug instead of reporting it — the missing
   guards belong in `BUGS.md`, not baked into a test's assumptions.
-- **Recognize when a test is fighting a widget instead of testing a boundary.**
-  I spent a significant amount of time trying to make the "Add time entry"
-  client `mat-select` reliably selectable under Playwright — click, then a
-  keyboard sequence, then keyboard-plus-explicit-visibility-waits, then an
-  explicit post-selection assertion to fail fast if it hadn't registered.
-  Each attempt fixed the previous failure mode and hit a new one; the pattern
-  (passes when stepped through slowly, fails intermittently at full speed) is
-  itself now `BUGS.md` item #3 — genuine evidence of a timing race in the
-  app's overlay handling, not a test artifact. But the permission-boundary
-  test I actually needed didn't require creating a new entry at all — an
-  existing seeded entry (guaranteed present in the current week, since
-  `buildSeedTimeEntries` generates entries relative to "now") proves the same
-  boundary without touching the unreliable widget. Once I noticed the test
-  didn't need the thing I was fighting to make reliable, I removed the
-  now-unused interaction code rather than leave a half-working, uncalled
-  method in the page object — untested, previously-broken code sitting unused
-  in a repo is worse than not having attempted it.
+- **Recognize when a test is fighting a widget instead of testing a
+  boundary.** I spent a significant amount of time trying to make the "Add
+  time entry" client `mat-select` reliably selectable under Playwright —
+  click, then a keyboard sequence, then keyboard-plus-explicit-visibility-
+  waits, then an explicit post-selection assertion to fail fast if it hadn't
+  registered. Each attempt fixed the previous failure mode and hit a new one;
+  the pattern (passes when stepped through slowly, fails intermittently at
+  full speed) is itself now `BUGS.md` item #7 — genuine evidence of a timing
+  race in the app's overlay handling, not a test artifact. But the
+  permission-boundary test I actually needed didn't require creating a new
+  entry at all — an existing seeded entry (guaranteed present in the current
+  week, since `buildSeedTimeEntries` generates entries relative to "now")
+  proves the same boundary without touching the unreliable widget. Once I
+  noticed the test didn't need the thing I was fighting to make reliable, I
+  removed the now-unused interaction code rather than leave a half-working,
+  uncalled method in the page object — untested, previously-broken code
+  sitting unused in a repo is worse than not having attempted it.
 - **Fresh browser context per test = fresh IndexedDB per test.** Playwright
   isolates storage per test by default, so seed data re-generates from
   scratch every run with no manual reset step needed, and tests can't
   contaminate each other's state.
 
-## What I'd do with more time
+## Beyond the required core
 
-- Automate a repro of the org-number-lookup race condition by controlling
-  response timing directly via `page.route()` (delay the first request's
-  fulfillment past the second one's) rather than relying on network
-  throttling.
-- Come back to the "Add time entry" `mat-select` interaction as its own
-  investigation — possibly by intercepting Angular's zone/change-detection
-  timing, or reproducing it outside Playwright entirely to rule out a
-  Playwright-specific cause versus a genuine app defect.
-- Add page objects/tests for Tasks and the remaining Optional items if time
-  allowed within the timebox.
+- **More bugs.** 12 confirmed issues total in `BUGS.md` (5 required minimum),
+  ranging from two High-severity privilege/permission gaps down to a handful
+  of Low-severity consistency and accessibility issues.
+- **The race condition ("the tricky one").** Reliably reproduced with a
+  dedicated test (`e2e/tests/race-condition.spec.ts`) by controlling mock
+  response timing directly rather than relying on real network conditions —
+  see Flake strategy above for why that's deterministic rather than lucky.
+- **Structure.** Shared login/mocking logic lives in `e2e/fixtures/`
+  (`auth.ts`, `network.ts`, `brreg-mock.ts`, merged via `index.ts` so every
+  spec gets both credentials and API stubbing from one import), and every
+  screen under test has a corresponding Page Object in `e2e/pages/` — no spec
+  file contains a raw `page.getByX(...)` locator; everything routes through a
+  page object method.
+
