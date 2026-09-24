@@ -46,7 +46,7 @@
 
       <mat-checkbox formControlName="isBillable">{{ 'time.billable' | translate }}</mat-checkbox>
 
-      <button mat-flat-button color="primary" type="submit">{{ 'time.add' | translate }}</button>
+      <button mat-flat-button color="primary" type="submit" data-testid="add-time-entry-button">{{ 'time.add' | translate }}</button>
     </form>
     @if (selectedHoliday()) {
       <p class="holiday-warning">
@@ -78,16 +78,16 @@
           } @else {
             <ul class="entry-list">
               @for (e of day.entries; track e.id) {
-                <li class="entry-row">
+                <li class="entry-row" [attr.data-testid]="'time-entry-' + e.id">
                   <span class="entry-time">{{ e.startTime }}–{{ e.endTime }}</span>
                   <span class="entry-client">{{ clientName(e.clientId) }}</span>
                   <span class="entry-comment">{{ e.comment }}</span>
-                  <span class="entry-duration">{{ durationLabel(e) }}</span>
+                  <span class="entry-duration" data-testid="entry-duration">{{ durationLabel(e) }}</span>
                   @if (e.isBillable) {
                     <mat-icon class="entry-billable" [attr.aria-label]="'time.billable' | translate">paid</mat-icon>
                   }
                   @if (isAdmin()) {
-                    <button mat-icon-button (click)="remove(e)">
+                    <button mat-icon-button (click)="remove(e)" [attr.data-testid]="'delete-entry-' + e.id">
                       <mat-icon>delete</mat-icon>
                     </button>
                   }

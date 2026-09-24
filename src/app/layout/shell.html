@@ -15,7 +15,7 @@
       {{ 'nav.time' | translate }}
     </a>
     @if (isAdmin()) {
-      <a mat-button routerLink="/users" routerLinkActive="active-link">
+      <a mat-button routerLink="/users" routerLinkActive="active-link" data-testid="nav-users-link">
         {{ 'nav.users' | translate }}
       </a>
     }
@@ -36,16 +36,16 @@
     {{ 'shell.reset' | translate }}
   </button>
 
-  <button mat-button [matMenuTriggerFor]="userMenu">
+  <button mat-button [matMenuTriggerFor]="userMenu" data-testid="user-menu-button">
     <mat-icon>account_circle</mat-icon>
     {{ displayName() }}
   </button>
   <mat-menu #userMenu="matMenu">
-    <button mat-menu-item (click)="logout()">
+    <button mat-menu-item (click)="logout()" data-testid="logout-button">
       <mat-icon>logout</mat-icon>
       {{ 'shell.logout' | translate }}
     </button>
-  </mat-menu>
+  </mat-menu>         
 </mat-toolbar>
 
 <main class="shell-content">
